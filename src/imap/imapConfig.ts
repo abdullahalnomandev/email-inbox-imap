@@ -3,6 +3,7 @@ import Imap from "node-imap";
 import { simpleParser } from "mailparser";
 import { IUserConfig } from "../types/imapConfigType";
 import getUserInfo from "../utils/getUserInfo";
+import 'dotenv/config'
 
 const processEmailsForUser = (config:IUserConfig | any) => {
   try {
@@ -41,8 +42,7 @@ const processEmailsForUser = (config:IUserConfig | any) => {
 
                   if (parsed) {
                     axios
-                      .post(
-                        "https://wm.azt4vo.easypanel.host/api/w/fluent/capture_u/u/noman/email_trigger__imap_",
+                      .post(process.env.WINDMILL_WEBHOOK_URL as string,
                         { htmlResponse: parsed }
                       )
                       .catch((error) => {
