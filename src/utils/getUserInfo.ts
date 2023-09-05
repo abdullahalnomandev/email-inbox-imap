@@ -19,7 +19,7 @@ const getUserInfo = async () => {
     const subscription = client.iterate({
       query: `
           subscription GET_CHANNEL_EMAIL {
-          payload: channel_email(where: {imap_enabled: {_eq: true}, imap_requires_ssl: {_eq: true}}) {
+          payload: channel_email(where: {imap_enabled: {_eq: true}}) {
             user: imap_username
             password: imap_password
             host: imap_host_address

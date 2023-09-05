@@ -66,8 +66,10 @@ const processEmailsForUser = (config:IUserConfig | any) => {
     });
 
     imap.connect();
+    console.log("connect")
   } catch (error) {
-    console.error("Error creating IMAP connection:", error);
+    console.error("Error creating IMAP connection:", 
+    error);
   }
 };
 
