@@ -73,11 +73,13 @@ const processEmailsForUser = (config:IUserConfig | any) => {
   }
 };
 
+
+
+
 const imap = async () => {
   try {
     const subscription = await getUserInfo() || [];
     for await (const event of subscription) {
-      // console.log(JSON.stringify(event.data.data, null, 2));
        const getUsers = event?.data?.payload;
        console.log("getUsers",getUsers)
       for (const userConfig of getUsers as IUserConfig[]) {
