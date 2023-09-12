@@ -5,7 +5,7 @@ import { IUserConfig } from "../types/imapConfigType";
 import getUserInfo from "../utils/getUserInfo";
 import 'dotenv/config'
 
-const processEmailsForUser = (config:IUserConfig | any) => {
+const processEmailsForUser =  (config:IUserConfig | any) => {
   try {
     const imap = new Imap(config);
 
@@ -66,7 +66,6 @@ const processEmailsForUser = (config:IUserConfig | any) => {
     });
 
     imap.connect();
-    console.log("connect")
   } catch (error) {
     console.error("Error creating IMAP connection:", 
     error);

@@ -7,7 +7,6 @@ const headers = {
 const client = createClient({
   url: process.env.HASURA_ENDPOINT as string ,
     //  Repleace wss: insearted of https:
-
   connectionParams: {
     headers,
   },
