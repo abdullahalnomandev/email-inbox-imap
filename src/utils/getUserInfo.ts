@@ -19,11 +19,14 @@ const getUserInfo = async () => {
       query: `
           subscription GET_CHANNEL_EMAIL {
           payload: channel_email(where: {imap_enabled: {_eq: true}}) {
+            id
             user: imap_username
             password: imap_password
             host: imap_host_address
             port: imap_port
             tls: imap_requires_ssl
+            imap_error_start_time
+            imap_error_solve_time
           }
         }
       `,
