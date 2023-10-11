@@ -6,7 +6,7 @@ const headers = {
   "x-hasura-admin-secret": process.env.HASURA_ADMIN_SECRET,
 };
 
-async function updateErrorDate(errorTimes: object) {
+async function updateErrorDate(errorTimes: object,channel_id:number) {
   const graphqlQuery = {
     query: `mutation SET_IMAP_ERROR_TIME($channel_email_id: Int!, $imap_times: channel_email_set_input = {}) {
           payload: update_channel_email_by_pk(pk_columns: {id: $channel_email_id}, _set: $imap_times) {
@@ -16,7 +16,7 @@ async function updateErrorDate(errorTimes: object) {
           }
         }`,
     variables: {
-      channel_email_id: 212,
+      channel_email_id: channel_id,
       imap_times: errorTimes,
     },
   };
@@ -43,7 +43,6 @@ async function updateErrorDate(errorTimes: object) {
     }
   } catch (error) {
     // Handle errors and log the error message
-    console.error("Error:", error);
     return {
       status: "error",
       message:"something went wrong..." // You can customize the error message
