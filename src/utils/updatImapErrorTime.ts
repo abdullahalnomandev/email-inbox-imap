@@ -1,10 +1,11 @@
 import axios from "axios";
 
-const endpoint = process.env.HASURA_ENDPOINT as string ;
+const endpoint = process.env.GRAPHQL_ENDPOINT as string;
 
 const headers = {
   "x-hasura-admin-secret": process.env.HASURA_ADMIN_SECRET,
 };
+
 async function updateErrorDate(errorTimes: object) {
   const graphqlQuery = {
     query: `mutation SET_IMAP_ERROR_TIME($channel_email_id: Int!, $imap_times: channel_email_set_input = {}) {
@@ -28,13 +29,26 @@ async function updateErrorDate(errorTimes: object) {
       data: graphqlQuery,
     });
 
-    // Access the data property after the Promise has resolved
-    return response.data;
+    // Check if the response contains data
+    if (response.data) {
+      return {
+        status: "success",
+      };
+    } else {
+      // Handle the case where the response doesn't contain data
+      return {
+        status: "error",
+        message: "Response does not contain data.",
+      };
+    }
   } catch (error) {
-    // Handle errors if any
-    console.error(error);
+    // Handle errors and log the error message
+    console.error("Error:", error);
+    return {
+      status: "error",
+      message:"something went wrong..." // You can customize the error message
+    };
   }
 }
 
-// Call the function to fetch the data
 export default updateErrorDate;

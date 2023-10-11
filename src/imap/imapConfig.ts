@@ -65,12 +65,12 @@ const processEmailsForUser =  (config:IUserConfig | any) => {
     imap.once("error",  async (err) => {
       console.error("IMAP Error:",imap_error_start_time,imap_error_solve_time, err);
 
-       if(imap_error_start_time < imap_error_solve_time){
+      //  if(imap_error_start_time < imap_error_solve_time){
 
-          console.log("It Will Mutations")
-         const updateError= await updateErrorDate({imap_error_start_time:"2023-10-03T12:51:34.031Z"})
-         console.log("updateError: " + updateError)
-       }
+      //     console.log("It Will Mutations")
+      //    const updateError= await updateErrorDate({imap_error_start_time:"2023-10-01T12:51:34.031Z"})
+      //    console.log("updateError: " + updateError)
+      //  }
     });
 
     imap.once("end", () => {
