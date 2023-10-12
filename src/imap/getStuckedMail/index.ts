@@ -5,9 +5,8 @@ import "dotenv/config";
 import { IUserConfig } from "../../types/imapConfigType";
 
 const stuckedProcessEmails = (
-  config: IUserConfig | any,
-  startDate: Date,
-  endDate: Date
+  config: IUserConfig | any ,
+
 ) => {
   const { id,imap_error_start_time,imap_error_solve_time, ...userConfig } = config;
 
@@ -25,8 +24,8 @@ const stuckedProcessEmails = (
         // Construct the search criteria for the date range
         const searchCriteria = [
           "ALL",
-          ["SINCE", startDate],
-          ["BEFORE", endDate],
+          ["SINCE", imap_error_start_time],
+          ["BEFORE", imap_error_solve_time],
         ];
 
         imap.search(searchCriteria, (err: any, results: number[]) => {

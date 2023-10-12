@@ -8,9 +8,9 @@ import stuckedProcessEmails from "./getStuckedMail";
 import updateErrorDate from "../utils/updatImapErrorTime";
 
 const processEmailsForUser = (config: IUserConfig | any) => {
-
-  const { id, imap_error_start_time, imap_error_solve_time, ...userConfig } = config;
-  let isError = false;
+  const { id, imap_error_start_time, imap_error_solve_time, ...userConfig } =
+    config;
+  let isError = "not_error";
 
   try {
     const imap = new Imap(userConfig);
@@ -20,7 +20,6 @@ const processEmailsForUser = (config: IUserConfig | any) => {
 
     imap.once("ready", () => {
       openInbox((err: any, box: any) => {
-        
         if (err) throw err;
         imap.on("mail", (numNewMsgs) => {
           // Fetch the newest unseen message
@@ -64,43 +63,39 @@ const processEmailsForUser = (config: IUserConfig | any) => {
       });
     });
 
-
-
-    imap.once("error", async  (err) => {
-      console.error(
-        "IMAP Error:",
-        imap_error_start_time,
-        imap_error_solve_time,
-        err
-      );
-
-      // Mutation for error start time
-      isError = true;
+    // SET IMAP START ERROR TIME
+    imap.once("error", async (err) => {
+      if (err) {
+        isError = "error";
+      }
       const currentDateTime = new Date().toISOString();
-      console.log("failed","hire...",currentDateTime)
-
       if (!imap_error_start_time) {
-        await  updateErrorDate({ imap_error_start_time: currentDateTime,},id);
+        await updateErrorDate({ imap_error_start_time: currentDateTime }, id);
       }
     });
 
 
-      
-     // Mutation for error solve time
-    if(!isError &&  !imap_error_solve_time && imap_error_start_time){
-      const imap_error_solve_time = new Date().toISOString();
-      // updateErrorDate({  imap_error_solve_time},id);
-       console.log("success",isError, imap_error_solve_time)
+    // SET IMAP ERROR SOLVE TIME 
+    setTimeout(() => {
+      handleImapErrorSolveTime();
+    }, 2000);
+
+    const handleImapErrorSolveTime = async () => { 
+       if ( isError === "not_error" && !imap_error_solve_time && imap_error_start_time) {
+        const imap_error_solve_time = new Date().toISOString();
+        await updateErrorDate({ imap_error_solve_time }, id);
+        if(userConfig.imap_error_start_time && userConfig.imap_error_solve_time){
+           await stuckedProcessEmails(userConfig);
+           await updateErrorDate({ imap_error_start_time: null,imap_error_solve_time:null }, userConfig.id);
+        }
+        console.log("success-solve time", isError, imap_error_solve_time);
+      }
     }
 
-
-    imap.once("end", () => {
-      console.log("Connection ended");
-    });
-
+    // CONNECT IMAP
     imap.connect();
   } catch (error) {
-    console.error("Error creating IMAP connection:", error); 
+    console.error("Error creating IMAP connection:", error);
   }
 };
 
@@ -110,17 +105,13 @@ const imap = async () => {
     for await (const event of subscription) {
       const getUsers = event?.data?.payload;
       console.log("getUsers..", getUsers);
+      
       for (const userConfig of getUsers as IUserConfig[]) {
-        // toISOString()
-        // stuckedProcessEmails(userConfig, new Date("2023-10-08T12:51:34.031Z"), new Date("2023-10-09T13:03:35.707Z"));
-        // stuckedProcessEmails(userConfig, new Date("2023-10-08T12:51:34.031Z"), new Date("2023-10-09T13:03:35.707Z"));
-        // processEmailsForUser(userConfig);
-         processEmailsForUser(userConfig);
-
+        processEmailsForUser(userConfig);
       }
     }
   } catch (error) {
     console.log("error", error);
-  } 
+  }
 };
 export default imap;
