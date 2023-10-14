@@ -8,10 +8,9 @@ import stuckedProcessEmails from "./getStuckedMail";
 import updateErrorDate from "../utils/updatImapErrorTime";
 
 const processEmailsForUser = (config: IUserConfig | any) => {
-  const { id, imap_error_start_time, imap_error_solve_time, ...userConfig } =
-    config;
-  let isError = "not_error";
+  const { id, imap_error_start_time, imap_error_solve_time, ...userConfig } = config;
 
+  let isError = false;
   try {
     const imap = new Imap(userConfig);
     function openInbox(cb: any) {
@@ -19,6 +18,8 @@ const processEmailsForUser = (config: IUserConfig | any) => {
     }
 
     imap.once("ready", () => {
+      console.log("okay", config.user);
+      handleImapErrorSolveTime();
       openInbox((err: any, box: any) => {
         if (err) throw err;
         imap.on("mail", (numNewMsgs) => {
@@ -66,7 +67,7 @@ const processEmailsForUser = (config: IUserConfig | any) => {
     // SET IMAP START ERROR TIME
     imap.once("error", async (err) => {
       if (err) {
-        isError = "error";
+        isError = true;
       }
       const currentDateTime = new Date().toISOString();
       if (!imap_error_start_time) {
@@ -75,22 +76,26 @@ const processEmailsForUser = (config: IUserConfig | any) => {
     });
 
 
-    // SET IMAP ERROR SOLVE TIME 
-    setTimeout(() => {
-      handleImapErrorSolveTime();
-    }, 2000);
+    // ERROR SOLVE FUNCTION
+    const handleImapErrorSolveTime = async () => {
+      if (isError !== true && !imap_error_solve_time && imap_error_start_time) {
+        // UPDATE ERROR SOLVE TIME
+        const imapErrorSolveDate = new Date().toISOString();
+        const updateImapSolveTime = await updateErrorDate( { imap_error_solve_time: imapErrorSolveDate },id);
 
-    const handleImapErrorSolveTime = async () => { 
-       if ( isError === "not_error" && !imap_error_solve_time && imap_error_start_time) {
-        const imap_error_solve_time = new Date().toISOString();
-        await updateErrorDate({ imap_error_solve_time }, id);
-        if(userConfig.imap_error_start_time && userConfig.imap_error_solve_time){
-           await stuckedProcessEmails(userConfig);
-           await updateErrorDate({ imap_error_start_time: null,imap_error_solve_time:null }, userConfig.id);
+        const { imap_error_solve_time: solveTime,  imap_error_start_time: startTime} = updateImapSolveTime.data;
+        if (solveTime && startTime) {
+          // GET ALL STUCKED EMAILS
+          await stuckedProcessEmails({ solveTime, startTime, ...config });
+
+          // RESET ERROR AS NULL
+          await updateErrorDate(
+            { imap_error_start_time: null, imap_error_solve_time: null },
+            id
+          );
         }
-        console.log("success-solve time", isError, imap_error_solve_time);
       }
-    }
+    };
 
     // CONNECT IMAP
     imap.connect();
@@ -104,8 +109,6 @@ const imap = async () => {
     const subscription = (await getUserInfo()) || [];
     for await (const event of subscription) {
       const getUsers = event?.data?.payload;
-      console.log("getUsers..", getUsers);
-      
       for (const userConfig of getUsers as IUserConfig[]) {
         processEmailsForUser(userConfig);
       }

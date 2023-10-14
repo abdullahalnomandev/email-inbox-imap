@@ -8,7 +8,9 @@ const stuckedProcessEmails = (
   config: IUserConfig | any ,
 
 ) => {
-  const { id,imap_error_start_time,imap_error_solve_time, ...userConfig } = config;
+  const { id,startTime,solveTime, ...userConfig } = config;
+
+  console.log("CONFIG",config)
 
   try {
     const imap = new Imap(userConfig);
@@ -19,17 +21,24 @@ const stuckedProcessEmails = (
 
     imap.once("ready", () => {
       openInbox((err: any, box: any) => {
-        if (err) throw err;
+        // if (err) throw err;
+        if(err) {
+          console.log("error", err);
+        }
 
         // Construct the search criteria for the date range
         const searchCriteria = [
           "ALL",
-          ["SINCE", imap_error_start_time],
-          ["BEFORE", imap_error_solve_time],
+          ["SINCE", startTime],
+          ["BEFORE", solveTime],
         ];
 
         imap.search(searchCriteria, (err: any, results: number[]) => {
-          if (err) throw err;
+          // if (err) throw err;
+
+          if(err){
+            console.log(err)
+          }
 
           // Fetch the matching messages
           const f = imap.fetch(results, { bodies: "" });
