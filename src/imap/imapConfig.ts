@@ -18,7 +18,7 @@ const processEmailsForUser = (config: IUserConfig | any) => {
     }
 
     imap.once("ready", () => {
-      console.log("okay", config.user);
+      // console.log("okay", config.user);
       handleImapErrorSolveTime();
       openInbox((err: any, box: any) => {
         if (err) throw err;
